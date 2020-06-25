@@ -2,9 +2,9 @@ package generator
 
 import (
 	"fmt"
-	"github.com/bigkucha/model-generator/database"
-	"github.com/bigkucha/model-generator/helper"
 	"github.com/dave/jennifer/jen"
+	"github.com/e421083458/model-generator/database"
+	"github.com/e421083458/model-generator/helper"
 	"github.com/jinzhu/inflection"
 	"github.com/urfave/cli"
 	"os"
@@ -12,8 +12,13 @@ import (
 )
 
 func Generate(c *cli.Context) error {
-	dbSns := fmt.Sprintf("%s:%s@/%s?charset=utf8&parseTime=True&loc=Local",
-		c.String("u"), c.String("p"), c.String("d"))
+	addr := "tcp(127.0.0.1:3306)"
+	if c.String("a") != "" {
+		addr = fmt.Sprintf("tcp(%s)", c.String("a"))
+	}
+	dbSns := fmt.Sprintf("%s:%s@%s/%s?charset=utf8&parseTime=True&loc=Local",
+		c.String("u"), c.String("p"), addr, c.String("d"))
+	fmt.Println(dbSns)
 	db := database.GetDB(dbSns)
 	if c.String("t") == "ALL" {
 		tables := db.GetDataBySql("show tables")
@@ -36,16 +41,17 @@ func generateModel(tableName string, columns []map[string]string, dir string) {
 		column := col["Field"]
 		var st *jen.Statement
 		if column == "id" {
-			st = jen.Id("ID").Uint().Tag(map[string]string{"json": "id"})
+			st = jen.Id("ID").Uint().Tag(map[string]string{"gorm": "primary_key", "json": "id"})
 		} else {
 			st = jen.Id(helper.SnakeCase2CamelCase(column, true))
 			getCol(st, t)
-			st.Tag(map[string]string{"json": column})
+			st.Tag(map[string]string{"gorm": "column:" + column, "json": column,})
 		}
 		codes = append(codes, st)
 	}
 	f := jen.NewFilePath(dir)
-	f.Type().Id(helper.SnakeCase2CamelCase(inflection.Singular(tableName), true)).Struct(codes...)
+	structName := helper.SnakeCase2CamelCase(inflection.Singular(tableName), true)
+	f.Type().Id(structName).Struct(codes...)
 	_ = os.MkdirAll(dir, os.ModePerm)
 	fileName := dir + "/" + inflection.Singular(tableName) + ".go"
 	_ = f.Save(fileName)
@@ -55,8 +61,10 @@ func generateModel(tableName string, columns []map[string]string, dir string) {
 func getCol(st *jen.Statement, t string) {
 	prefix := strings.Split(t, "(")[0]
 	switch prefix {
-	case "int", "tinyint", "smallint", "bigint", "mediumint":
+	case "int", "tinyint", "smallint", "mediumint":
 		st.Int()
+	case "bigint":
+		st.Int64()
 	case "float":
 		st.Float32()
 	case "varchar":

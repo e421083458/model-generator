@@ -5,7 +5,7 @@ this is a model generator for [jinzhu/gorm](https://github.com/jinzhu/gorm)
 
 Demo
 ===
-![image](https://github.com/bigkucha/model-generator/blob/master/media/test.gif)
+![image](https://github.com/e421083458/model-generator/blob/master/media/test.gif)
 
 
 Install

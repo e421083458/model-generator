@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/bigkucha/model-generator/generator"
+	"github.com/e421083458/model-generator/generator"
 	"github.com/urfave/cli"
 	"os"
 )
@@ -19,6 +19,11 @@ func main() {
 			Name:  "password, p",
 			Value: "",
 			Usage: "Password of mysql",
+		},
+		cli.StringFlag{
+			Name:  "address, a",
+			Value: "",
+			Usage: "host:port of mysql like 127.0.0.1:3306",
 		},
 		cli.StringFlag{
 			Name:  "database, d",

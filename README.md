@@ -41,7 +41,11 @@ Flags
     <td>require, default null</td>
     <td>password of mysql</td>
   </tr>
-  
+  <tr>
+    <td>address, a</td>
+    <td>optional,default '127.0.0.1:3306'</td>
+    <td>host:port of mysql</td>
+  </tr>
   <tr>
     <td>database, d</td>
     <td>require</td>
